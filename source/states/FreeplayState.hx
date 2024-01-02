@@ -100,6 +100,7 @@ class FreeplayState extends MusicBeatState
 		{
 			var songText:Alphabet = new Alphabet(90, 320, songs[i].songName, true);
 			songText.targetY = i;
+			songText.distancePerItem.y = 150;
 			grpSongs.add(songText);
 
 			songText.scaleX = Math.min(1, 980 / songText.width);
@@ -120,7 +121,7 @@ class FreeplayState extends MusicBeatState
 
 			// songText.x += 40;
 			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
-			// songText.screenCenter(X);
+			songText.screenCenter(X);
 		}
 		WeekData.setDirectoryFromWeek();
 
@@ -495,8 +496,13 @@ class FreeplayState extends MusicBeatState
 		{
 			bullShit++;
 			item.alpha = 0.6;
-			if (item.targetY == curSelected)
+			item.lerpToScaleX = 0.8;
+			item.lerpToScaleY = 0.8;
+			if (item.targetY == curSelected){
 				item.alpha = 1;
+				item.lerpToScaleX = 1.125;
+				item.lerpToScaleY = 1.125;
+			}
 		}
 		
 		Mods.currentModDirectory = songs[curSelected].folder;
@@ -549,7 +555,10 @@ class FreeplayState extends MusicBeatState
 		{
 			var item:Alphabet = grpSongs.members[i];
 			item.visible = item.active = true;
-			item.x = ((item.targetY - lerpSelected) * item.distancePerItem.x) + item.startPosition.x;
+			item.screenCenter(X);
+			item.scaleX = FlxMath.lerp(item.scaleX, item.lerpToScaleX, FlxMath.bound(elapsed * 12, 0, 1));
+			item.scaleY = FlxMath.lerp(item.scaleY, item.lerpToScaleY, FlxMath.bound(elapsed * 12, 0, 1));
+			// item.x = ((item.targetY - lerpSelected) * item.distancePerItem.x) + item.startPosition.x;
 			item.y = ((item.targetY - lerpSelected) * 1.3 * item.distancePerItem.y) + item.startPosition.y;
 
 			var icon:HealthIcon = iconArray[i];
