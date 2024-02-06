@@ -34,6 +34,8 @@ class FreeplayState extends MusicBeatState
 	private var curPlaying:Bool = false;
 
 	private var iconArray:Array<HealthIcon> = [];
+	var sideCharGrp:FlxTypedGroup<FlxSprite>;
+	var sideCharArray:Array<String> = [];
 
 	var bg:FlxSprite;
 	var intendedColor:Int;
@@ -93,6 +95,16 @@ class FreeplayState extends MusicBeatState
 		add(bg);
 		bg.screenCenter();
 
+		sideCharGrp = new FlxTypedGroup<FlxSprite>();
+		add(sideCharGrp);
+
+		var bf = new FlxSprite().loadGraphic(Paths.image('freeplay/boyfriend'));
+		bf.scale.set(0.5, 0.5);
+		bf.updateHitbox();
+		bf.y = (FlxG.height - bf.height);
+		bf.x = FlxG.width - (bf.width);
+		add(bf);
+
 		grpSongs = new FlxTypedGroup<Alphabet>();
 		add(grpSongs);
 
@@ -110,6 +122,7 @@ class FreeplayState extends MusicBeatState
 			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
 			icon.sprTracker = songText;
 
+			sideCharArray.push(songs[i].songCharacter);
 			
 			// too laggy with a lot of songs, so i had to recode the logic for it
 			songText.visible = songText.active = songText.isMenuItem = false;
@@ -124,6 +137,20 @@ class FreeplayState extends MusicBeatState
 			songText.screenCenter(X);
 		}
 		WeekData.setDirectoryFromWeek();
+
+		for(i in sideCharArray){
+			try{
+				var char:FlxSprite = new FlxSprite().loadGraphic(Paths.image('freeplay/$i'));
+				char.visible = false;
+				char.scale.set(0.5, 0.5);
+				char.updateHitbox();
+				char.y = (FlxG.height - char.height);	
+				char.x = 0;
+				sideCharGrp.add(char);	
+			}catch(e:haxe.Exception){
+				trace('Error loading character: $i');
+			}
+		}
 
 		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
@@ -204,6 +231,8 @@ class FreeplayState extends MusicBeatState
 		}
 		lerpScore = Math.floor(FlxMath.lerp(lerpScore, intendedScore, FlxMath.bound(elapsed * 24, 0, 1)));
 		lerpRating = FlxMath.lerp(lerpRating, intendedRating, FlxMath.bound(elapsed * 12, 0, 1));
+		
+		for(i in sideCharGrp.members) i.y = FlxMath.lerp(i.y, FlxG.height - i.height, FlxMath.bound(elapsed * 12, 0, 1));
 
 		if (Math.abs(lerpScore - intendedScore) <= 10)
 			lerpScore = intendedScore;
@@ -485,12 +514,11 @@ class FreeplayState extends MusicBeatState
 
 		var bullShit:Int = 0;
 
-		for (i in 0...iconArray.length)
-		{
-			iconArray[i].alpha = 0.6;
-		}
-
+		for (i in 0...iconArray.length) iconArray[i].alpha = 0.6;
+		for (i in sideCharGrp.members) i.visible = false;
 		iconArray[curSelected].alpha = 1;
+		sideCharGrp.members[curSelected].visible = true;
+		sideCharGrp.members[curSelected].y =  (FlxG.height - (sideCharGrp.members[curSelected].height / 2));
 
 		for (item in grpSongs.members)
 		{
